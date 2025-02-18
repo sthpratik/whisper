@@ -1,6 +1,6 @@
 # Whisper
-![alt text](image-2.png)
-![alt text](image-1.png)
+![alt text](./images/image-2.png)
+![alt text](./images/image-1.png)
 ## Overview
 Whisper is a local transcription app that allows users to convert voice into text. Users can either upload an audio/video file or record directly using a microphone, and the app will process the input to generate a transcription.
 
@@ -57,11 +57,11 @@ Whisper is a local transcription app that allows users to convert voice into tex
    ```
 4. Run the Flask server:
    ```bash
-   python app.py
+   python src/app.py
    ```
 5. Open the browser and navigate to:
    ```
-   http://localhost:3050
+   http://localhost:5050
    ```
 
 ## Troubleshooting
