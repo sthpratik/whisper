@@ -1,0 +1,6 @@
+whisper
+Flask
+werkzeug
+soundfile
+ffmpeg-python
+numpy
