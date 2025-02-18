@@ -57,5 +57,5 @@ def record_audio():
     return jsonify({"transcription": result["text"]})
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=3005)  # Change 8080 to any free port
+    app.run(debug=True, host="0.0.0.0", port=3050)  # Change 8080 to any free port
 
