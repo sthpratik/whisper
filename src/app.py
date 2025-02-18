@@ -1,7 +1,7 @@
 import whisper
 import os
 import tempfile
-import soundfile as sf
+# import soundfile as sf
 import ffmpeg
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
@@ -9,6 +9,9 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Read environment variables
+PORT = os.getenv("PORT", 5050)  # Default to 5000 if PORT is not set
+
 
 # Load Whisper model (change to "tiny", "base", "small", etc.)
 model = whisper.load_model("small")
@@ -57,5 +60,5 @@ def record_audio():
     return jsonify({"transcription": result["text"]})
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=3050)  # Change 8080 to any free port
+    app.run(debug=True, host="0.0.0.0", port=int(PORT))  # Change 8080 to any free port
 

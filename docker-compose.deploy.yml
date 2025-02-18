@@ -1,0 +1,18 @@
+# Use root/example as user/password credentials
+version: '3.9'
+
+services:
+  whisper:
+    image: whisper:latest
+    build: .
+    platform: linux/amd64
+    ports:
+      - "5050:5050"
+    environment:
+      - PORT=5050
+    volumes:
+      - whisper_data:/app/src/uploads
+
+
+volumes:
+  whisper_data: {}

@@ -1,6 +1,14 @@
-whisper
 Flask
 werkzeug
 soundfile
 ffmpeg-python
 numpy
+torch
+openai-whisper==20240930
+# numba
+#torch
+# tqdm
+# more-itertools
+# tiktoken
+
+# pyaudio

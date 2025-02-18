@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisper Local Transcription</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Free icons -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f7fa;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 1200px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* First row: Two columns */
+        .row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+
+        .column h3 {
+            color: #3c5a99;
+            font-size: 1.25em;
+            margin-bottom: 10px;
+        }
+
+        .column button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .column button:hover {
+            background-color: #45a049;
+        }
+
+        .column input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .status,
+        .result {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #555;
+            margin: 20px;
+        }
+
+        .audio-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .audio-controls audio {
+            width: 100%;
+            display: block;
+        }
+
+        /* Transcription Section (Spans both columns) */
+        .transcription {
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .transcription h3 {
+            color: #3c5a99;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .transcription p {
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        @media screen and (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- First Row: Two columns for File Upload and Microphone Recording -->
+        <div class="row">
+            <!-- Column 1: File Upload Section -->
+            <div class="column">
+                <h3><i class="fas fa-upload"></i> 1️⃣ Upload Audio/Video:</h3>
+                <input type="file" id="fileInput" accept="audio/*,video/*" onchange="previewAudio(event)">
+                
+                <div id="previewAudioPlayerDiv" style="display: none;">
+                    <h3 ><i class="fas fa-headphones" ></i> 🎵 Preview Selected Audio:</h3>
+                    <audio id="previewAudioPlayer" controls></audio>
+                </div>
+
+                <h3><i class="fas fa-arrow-right"></i> 2️⃣ Transcribe:</h3>
+                <button onclick="uploadFile()">Transcribe</button>
+
+                <!-- <div class="audio-controls">
+                    <h3><i class="fas fa-volume-up"></i> 📢 Play Transcribed Audio:</h3>
+                    <audio id="transcribedAudioPlayer" controls style="display: none;"></audio>
+                    <button id="playTranscribedButton" onclick="playTranscribedAudio()" style="display: none;">Play</button>
+                </div> -->
+            </div>
+
+            <!-- Column 2: Microphone Recording Section -->
+            <div class="column">
+                <h3><i class="fas fa-microphone"></i> Record from Microphone:</h3>
+                <button onclick="startRecording()"><i class="fas fa-microphone-alt"></i> Start Recording</button>
+                <button onclick="stopRecording()"><i class="fas fa-stop"></i> Stop & Transcribe</button>
+
+            </div>
+        </div>
+
+        <!-- Second Row: Transcription Result (Spans across both columns) -->
+        <div class="transcription">
+            <div class="status">
+                <h3>Status:</h3>
+                <p id="status">Waiting...</p>
+                <h3>📝 Transcription:</h3>
+                <p id="result">No transcription yet.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function previewAudio(event) {
+            let file = event.target.files[0];  // Get selected file
+            if (!file) return;
+
+            let audioPlayerDiv = document.getElementById("previewAudioPlayerDiv");
+            audioPlayerDiv.style.display = "block";
+            let audioPlayer = document.getElementById("previewAudioPlayer");
+            let objectURL = URL.createObjectURL(file); // Create local preview URL
+            audioPlayer.src = objectURL;
+            audioPlayer.load();  // Ensure the audio reloads properly
+        }
+
+        async function uploadFile() {
+            let fileInput = document.getElementById("fileInput");
+            let formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            document.getElementById("status").innerText = "Transcribing...";
+            let response = await fetch("/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+
+            if (data.error) {
+                document.getElementById("result").innerText = "Error: " + data.error;
+                return;
+            }
+
+            document.getElementById("status").innerText = "Transcription Complete!";
+            document.getElementById("result").innerText = data.transcription;
+
+            // // Set and show uploaded audio player
+            // let transcribedAudioPlayer = document.getElementById("transcribedAudioPlayer");
+            // transcribedAudioPlayer.src = data.audio_url;
+            // transcribedAudioPlayer.style.display = "block";
+            // transcribedAudioPlayer.load();  // Ensure it reloads
+
+            // let playButton = document.getElementById("playTranscribedButton");
+            // playButton.style.display = "inline";
+        }
+
+        // function playTranscribedAudio() {
+        //     let transcribedAudioPlayer = document.getElementById("transcribedAudioPlayer");
+        //     if (transcribedAudioPlayer.src) {
+        //         transcribedAudioPlayer.play();
+        //     } else {
+        //         alert("Audio not loaded yet!");
+        //     }
+        // }
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        async function startRecording() {
+            let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            document.getElementById("status").innerText = "Recording... Speak now!";
+            mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+            });
+        }
+
+        async function stopRecording() {
+            mediaRecorder.stop();
+            document.getElementById("status").innerText = "Processing...";
+
+            mediaRecorder.addEventListener("stop", async () => {
+                let audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                let formData = new FormData();
+                formData.append("audio", audioBlob);
+
+                let response = await fetch("/record", {
+                    method: "POST",
+                    body: formData
+                });
+
+                let data = await response.json();
+                document.getElementById("result").innerText = data.transcription || "Error occurred!";
+                audioChunks = [];
+            });
+        }
+    </script>
+</body>
+</html>
