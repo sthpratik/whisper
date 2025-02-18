@@ -1,5 +1,5 @@
-# Whisper App Documentation & User Guide
-
+# Whisper
+![alt text](image.png)
 ## Overview
 Whisper is a local transcription app that allows users to convert voice into text. Users can either upload an audio/video file or record directly using a microphone, and the app will process the input to generate a transcription.
 
