@@ -10,7 +10,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Read environment variables
-PORT = os.getenv("PORT", 5055)  # Default to 5000 if PORT is not set
+PORT = os.getenv("PORT", 5050)  # Default to 5000 if PORT is not set
 
 
 # Load Whisper model (change to "tiny", "base", "small", etc.)
