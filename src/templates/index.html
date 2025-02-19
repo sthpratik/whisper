@@ -5,123 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whisper Local Transcription</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Free icons -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f7fa;
-        }
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='theme.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+   <style>
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            max-width: 1200px;
-            margin: auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* First row: Two columns */
-        .row {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .column {
-            flex: 1;
-            min-width: 300px;
-            max-width: 500px;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            background-color: #ffffff;
-        }
-
-        .column h3 {
-            color: #3c5a99;
-            font-size: 1.25em;
-            margin-bottom: 10px;
-        }
-
-        .column button {
-            background-color: #4caf50;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1em;
-            cursor: pointer;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .column button:hover {
-            background-color: #45a049;
-        }
-
-        .column input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .status,
-        .result {
-            margin-top: 20px;
-            font-size: 1.1em;
-            color: #555;
-            margin: 20px;
-        }
-
-        .audio-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-        }
-
-        .audio-controls audio {
-            width: 100%;
-            display: block;
-        }
-
-        /* Transcription Section (Spans both columns) */
-        .transcription {
-            width: 100%;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
-        }
-
-        .transcription h3 {
-            color: #3c5a99;
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        .transcription p {
-            color: #555;
-            font-size: 1.1em;
-        }
-
-        @media screen and (max-width: 768px) {
-            .row {
-                flex-direction: column;
-            }
-        }
     </style>
 </head>
 <body>
@@ -131,7 +18,7 @@
             <!-- Column 1: File Upload Section -->
             <div class="column">
                 <h3><i class="fas fa-upload"></i> 1️⃣ Upload Audio/Video:</h3>
-                <input type="file" id="fileInput" accept="audio/*,video/*" onchange="previewAudio(event)">
+                <input type="file" id="fileInput" accept="audio/*,video/*" onchange="previewAudio(event)" >
                 
                 <div id="previewAudioPlayerDiv" style="display: none;">
                     <h3 ><i class="fas fa-headphones" ></i> 🎵 Preview Selected Audio:</h3>
@@ -139,7 +26,7 @@
                 </div>
 
                 <h3><i class="fas fa-arrow-right"></i> 2️⃣ Transcribe:</h3>
-                <button onclick="uploadFile()">Transcribe</button>
+                <button onclick="uploadFile()" class="btn">Transcribe</button>
 
                 <!-- <div class="audio-controls">
                     <h3><i class="fas fa-volume-up"></i> 📢 Play Transcribed Audio:</h3>
@@ -151,8 +38,8 @@
             <!-- Column 2: Microphone Recording Section -->
             <div class="column">
                 <h3><i class="fas fa-microphone"></i> Record from Microphone:</h3>
-                <button onclick="startRecording()"><i class="fas fa-microphone-alt"></i> Start Recording</button>
-                <button onclick="stopRecording()"><i class="fas fa-stop"></i> Stop & Transcribe</button>
+                <button onclick="startRecording()" class="btn btn-rounded"><i class="fas fa-microphone-alt"></i> Start Recording</button>
+                <button onclick="stopRecording()" class="btn btn-rounded"><i class="fas fa-stop"></i> Stop & Transcribe</button>
 
             </div>
         </div>
