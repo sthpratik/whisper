@@ -1,4 +1,3 @@
-Flask
 werkzeug
 soundfile
 ffmpeg-python
@@ -10,9 +9,8 @@ pipdeptree
 setuptools_rust
 ffmpeg 
 # numba
-#torch
-# tqdm
-# more-itertools
-
-
 # pyaudio
+fastapi 
+uvicorn>=0.27.1 
+jinja2
+python-multipart

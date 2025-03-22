@@ -1,147 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Whisper Local Transcription</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Free icons -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-   <style>
-
-    </style>
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <!-- Free icons -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ request.url_for('static', path='theme.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ request.url_for('static', path='style.css') }}"
+    />
+    <style></style>
+  </head>
+  <body>
     <div class="container">
-        <!-- First Row: Two columns for File Upload and Microphone Recording -->
-        <div class="row">
-            <!-- Column 1: File Upload Section -->
-            <div class="column">
-                <h3><i class="fas fa-upload"></i> 1️⃣ Upload Audio/Video:</h3>
-                <input type="file" id="fileInput" accept="audio/*,video/*" onchange="previewAudio(event)" >
-                
-                <div id="previewAudioPlayerDiv" style="display: none;">
-                    <h3 ><i class="fas fa-headphones" ></i> 🎵 Preview Selected Audio:</h3>
-                    <audio id="previewAudioPlayer" controls></audio>
-                </div>
+      <!-- First Row: Two columns for File Upload and Microphone Recording -->
+      <div class="row">
+        <!-- Column 1: File Upload Section -->
+        <div class="column">
+          <h3><i class="fas fa-upload"></i> 1️⃣ Upload Audio/Video:</h3>
+          <input
+            type="file"
+            id="fileInput"
+            accept="audio/*,video/*"
+            onchange="previewAudio(event)"
+          />
 
-                <h3><i class="fas fa-arrow-right"></i> 2️⃣ Transcribe:</h3>
-                <button onclick="uploadFile()" class="btn">Transcribe</button>
+          <div id="previewAudioPlayerDiv" style="display: none">
+            <h3>
+              <i class="fas fa-headphones"></i> 🎵 Preview Selected Audio:
+            </h3>
+            <audio id="previewAudioPlayer" controls></audio>
+          </div>
 
-                <!-- <div class="audio-controls">
-                    <h3><i class="fas fa-volume-up"></i> 📢 Play Transcribed Audio:</h3>
-                    <audio id="transcribedAudioPlayer" controls style="display: none;"></audio>
-                    <button id="playTranscribedButton" onclick="playTranscribedAudio()" style="display: none;">Play</button>
-                </div> -->
-            </div>
-
-            <!-- Column 2: Microphone Recording Section -->
-            <div class="column">
-                <h3><i class="fas fa-microphone"></i> Record from Microphone:</h3>
-                <button onclick="startRecording()" class="btn btn-rounded"><i class="fas fa-microphone-alt"></i> Start Recording</button>
-                <button onclick="stopRecording()" class="btn btn-rounded"><i class="fas fa-stop"></i> Stop & Transcribe</button>
-
-            </div>
+          <h3><i class="fas fa-arrow-right"></i> 2️⃣ Transcribe:</h3>
+          <button onclick="uploadFile()" class="btn">Transcribe</button>
         </div>
 
-        <!-- Second Row: Transcription Result (Spans across both columns) -->
-        <div class="transcription">
-            <div class="status">
-                <h3>Status:</h3>
-                <p id="status">Waiting...</p>
-                <h3>📝 Transcription:</h3>
-                <p id="result">No transcription yet.</p>
-            </div>
-
+        <!-- Column 2: Microphone Recording Section -->
+        <div class="column">
+          <h3><i class="fas fa-microphone"></i> Record from Microphone:</h3>
+          <button
+            id="recordButton"
+            onclick="toggleRecording()"
+            class="btn btn-rounded"
+          >
+            <i class="fas fa-microphone-alt"></i> Start Recording
+          </button>
+          <button
+            id="transcribeButton"
+            onclick="transcribeRecording()"
+            class="btn btn-rounded"
+            style="display: none"
+          >
+            <i class="fas fa-file-alt"></i> Transcribe
+          </button>
+          <audio
+            id="recordedAudioPlayer"
+            controls
+            style="display: none"
+          ></audio>
         </div>
+      </div>
+
+      <!-- Second Row: Transcription Result (Spans across both columns) -->
+      <div class="transcription">
+        <div class="status">
+          <h3>Status:</h3>
+          <p id="status">Waiting...</p>
+          <h3>📝 Transcription:</h3>
+          <p id="result">No transcription yet.</p>
+        </div>
+      </div>
     </div>
 
     <script>
-        function previewAudio(event) {
-            let file = event.target.files[0];  // Get selected file
-            if (!file) return;
+      function previewAudio(event) {
+        let file = event.target.files[0]; // Get selected file
+        if (!file) return;
 
-            let audioPlayerDiv = document.getElementById("previewAudioPlayerDiv");
-            audioPlayerDiv.style.display = "block";
-            let audioPlayer = document.getElementById("previewAudioPlayer");
-            let objectURL = URL.createObjectURL(file); // Create local preview URL
-            audioPlayer.src = objectURL;
-            audioPlayer.load();  // Ensure the audio reloads properly
+        let audioPlayerDiv = document.getElementById("previewAudioPlayerDiv");
+        audioPlayerDiv.style.display = "block";
+        let audioPlayer = document.getElementById("previewAudioPlayer");
+        let objectURL = URL.createObjectURL(file); // Create local preview URL
+        audioPlayer.src = objectURL;
+        audioPlayer.load(); // Ensure the audio reloads properly
+      }
+
+      async function uploadFile() {
+        let fileInput = document.getElementById("fileInput");
+        let formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        document.getElementById("status").innerText = "Transcribing...";
+        let response = await fetch("/uploadaudio", {
+          method: "POST",
+          body: formData,
+        });
+
+        let data = await response.json();
+
+        if (data.error) {
+          document.getElementById("result").innerText = "Error: " + data.error;
+          return;
         }
 
-        async function uploadFile() {
-            let fileInput = document.getElementById("fileInput");
-            let formData = new FormData();
-            formData.append("file", fileInput.files[0]);
+        document.getElementById("status").innerText = "Transcription Complete!";
+        document.getElementById("result").innerText = data.transcription;
 
-            document.getElementById("status").innerText = "Transcribing...";
-            let response = await fetch("/upload", {
-                method: "POST",
-                body: formData
-            });
 
-            let data = await response.json();
-
-            if (data.error) {
-                document.getElementById("result").innerText = "Error: " + data.error;
-                return;
-            }
-
-            document.getElementById("status").innerText = "Transcription Complete!";
-            document.getElementById("result").innerText = data.transcription;
-
-            // // Set and show uploaded audio player
-            // let transcribedAudioPlayer = document.getElementById("transcribedAudioPlayer");
-            // transcribedAudioPlayer.src = data.audio_url;
-            // transcribedAudioPlayer.style.display = "block";
-            // transcribedAudioPlayer.load();  // Ensure it reloads
-
-            // let playButton = document.getElementById("playTranscribedButton");
-            // playButton.style.display = "inline";
         }
-
-        // function playTranscribedAudio() {
-        //     let transcribedAudioPlayer = document.getElementById("transcribedAudioPlayer");
-        //     if (transcribedAudioPlayer.src) {
-        //         transcribedAudioPlayer.play();
-        //     } else {
-        //         alert("Audio not loaded yet!");
-        //     }
-        // }
-
+        
         let mediaRecorder;
         let audioChunks = [];
+        let isRecording = false;
 
-        async function startRecording() {
-            let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        async function toggleRecording() {
+          const recordButton = document.getElementById("recordButton");
+          const recordedAudioPlayer = document.getElementById(
+            "recordedAudioPlayer"
+          );
+          const transcribeButton = document.getElementById("transcribeButton");
+
+          if (!isRecording) {
+            // Start recording
+            let stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.start();
+            audioChunks = [];
 
-            document.getElementById("status").innerText = "Recording... Speak now!";
-            mediaRecorder.addEventListener("dataavailable", event => {
-                audioChunks.push(event.data);
+            document.getElementById("status").innerText =
+              "Recording... Speak now!";
+            recordButton.innerHTML =
+              '<i class="fas fa-stop"></i> Stop Recording';
+            isRecording = true;
+
+            mediaRecorder.addEventListener("dataavailable", (event) => {
+              audioChunks.push(event.data);
             });
+
+            mediaRecorder.addEventListener("stop", () => {
+              let audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+              let objectURL = URL.createObjectURL(audioBlob);
+              recordedAudioPlayer.src = objectURL;
+              recordedAudioPlayer.style.display = "block";
+              transcribeButton.style.display = "inline";
+            });
+          } else {
+            // Stop recording
+            mediaRecorder.stop();
+            document.getElementById("status").innerText =
+              "Recording stopped. You can play or transcribe the audio.";
+            recordButton.innerHTML =
+              '<i class="fas fa-microphone-alt"></i> Start Recording';
+            isRecording = false;
+          }
         }
 
-        async function stopRecording() {
-            mediaRecorder.stop();
-            document.getElementById("status").innerText = "Processing...";
+        async function transcribeRecording() {
+          const transcribeButton = document.getElementById("transcribeButton");
+          const recordedAudioPlayer = document.getElementById(
+            "recordedAudioPlayer"
+          );
 
-            mediaRecorder.addEventListener("stop", async () => {
-                let audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-                let formData = new FormData();
-                formData.append("audio", audioBlob);
+          if (audioChunks.length === 0) {
+            document.getElementById("status").innerText =
+              "No recording available to transcribe.";
+            return;
+          }
 
-                let response = await fetch("/record", {
-                    method: "POST",
-                    body: formData
-                });
+          document.getElementById("status").innerText = "Transcribing...";
+          let audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+          let formData = new FormData();
+          formData.append("audio", audioBlob);
 
-                let data = await response.json();
-                document.getElementById("result").innerText = data.transcription || "Error occurred!";
-                audioChunks = [];
-            });
+          let response = await fetch("/recordaudio", {
+            method: "POST",
+            body: formData,
+          });
+
+          let data = await response.json();
+          document.getElementById("result").innerText =
+            data.transcription || "Error occurred!";
+          document.getElementById("status").innerText =
+            "Transcription complete!";
         }
     </script>
-</body>
+  </body>
 </html>

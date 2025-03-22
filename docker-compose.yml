@@ -8,5 +8,5 @@ services:
       - "5050:5050"
     environment:
       - PORT=5050
-    volumes:
-      - ./src:/app/src
+    # volumes:
+    #   - ./src:/app/src
